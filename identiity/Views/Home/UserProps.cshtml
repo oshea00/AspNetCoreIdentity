@@ -1,0 +1,22 @@
+﻿@model AppUser
+
+<h1>@Model.UserName</h1>
+<div asp-validation-summary="All" class="text-danger"></div>
+<form asp-action="UserProps" method="post">
+    <div class="form-group">
+        <label asp-for="City" class="form-control"></label>
+        <select asp-for="City" class="form-control"
+                asp-items="@new SelectList(Enum.GetNames(typeof(AppUser.Cities)))">
+            <option disabled selected value="">Select a City</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label asp-for="Qualifications" class="form-control"></label>
+        <select asp-for="Qualifications" class="form-control"
+                asp-items="@new SelectList(Enum.GetNames(typeof(AppUser.QualificationLevels)))">
+            <option disabled selected value="">Select Qualification Level</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

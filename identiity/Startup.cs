@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authentication;
+using identiity.Infrastructure;
+using System.Security.Claims;
 
 namespace identiity
 {
@@ -38,13 +41,27 @@ namespace identiity
                 options.UseSqlServer(Configuration["Data:AppIdentity:ConnectionString"]);
             });
 
-            services.AddIdentity<AppUser, IdentityRole>(opts=> {
+            services.AddIdentity<AppUser, IdentityRole>(opts => {
                 opts.User.RequireUniqueEmail = true;
             })
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddSingleton<IClaimsTransformation, LocationClaimsProvider>();
+
+            services.AddAuthorization(opts => {
+                opts.AddPolicy("DCUsers", policy => {
+                    policy.RequireRole("Users");
+                    policy.RequireClaim(ClaimTypes.StateOrProvince, "DC");
+                });
+            });
+
+            services.AddAuthentication().AddGoogle(opts => {
+                opts.ClientId = "124399036639-50hou2adb0mq0dami1q73f9girluah63.apps.googleusercontent.com";
+                opts.ClientSecret = "abUj2pRtUZcLQLxRRV_AtzSA";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -74,7 +91,7 @@ namespace identiity
             });
 
             AppIdentityDbContext.CreateAdminAccount(
-                app.ApplicationServices, 
+                app.ApplicationServices,
                 Configuration).Wait();
         }
     }
